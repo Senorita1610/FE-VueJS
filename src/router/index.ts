@@ -2,6 +2,9 @@ import { createRouter, createWebHistory, RouteRecordRaw } from "vue-router";
 // import AuthLayout from '../layouts/AuthLayout.vue'
 import AppLayout from '@/layouts/AppLayout.vue'
 import AdminLayout from '@/layouts/AdminLayout.vue'
+import { useAccountStore } from '@/store/account';
+
+
 
 const routes: Array<RouteRecordRaw> = [
   {
@@ -14,6 +17,14 @@ const routes: Array<RouteRecordRaw> = [
         component: () => import('@/pages/home/HomeView.vue'),
         meta: {
           title: 'Digishop'
+        }
+      },
+      {
+        name: '404-page',
+        path: 'error',
+        component: () => import('@/pages/Error.vue'),
+        meta: {
+          title: '404 - Page Not Found',
         }
       },
       {
@@ -35,6 +46,7 @@ const routes: Array<RouteRecordRaw> = [
         path: '',
         component: () => import('@/pages/dashboard/Dashboard.vue'),
         meta: {
+          requiresAuth: true,
           title: 'Dashboard'
         }
       },
@@ -43,6 +55,7 @@ const routes: Array<RouteRecordRaw> = [
         path: '/account-type',
         component: () => import('@/pages/accountType/AccountTypeView.vue'),
         meta: {
+          requiresAuth: true,
           title: 'Account Types'
         }
       },
@@ -51,6 +64,7 @@ const routes: Array<RouteRecordRaw> = [
         path: '/account',
         component: () => import('@/pages/account/AccountView.vue'),
         meta: {
+          requiresAuth: true,
           title: 'Account'
         }
       },
@@ -59,6 +73,7 @@ const routes: Array<RouteRecordRaw> = [
         path: '/customer',
         component: () => import('@/pages/customer/CustomerView.vue'),
         meta: {
+          requiresAuth: true,
           title: 'Customer'
         }
       },
@@ -67,6 +82,7 @@ const routes: Array<RouteRecordRaw> = [
         path: '/employee',
         component: () => import('@/pages/employee/EmployeeView.vue'),
         meta: {
+          requiresAuth: true,
           title: 'Employee'
         }
       },
@@ -75,6 +91,7 @@ const routes: Array<RouteRecordRaw> = [
         path: '/category',
         component: () => import('@/pages/category/CategoryView.vue'),
         meta: {
+          requiresAuth: true,
           title: 'Category'
         }
       },
@@ -83,6 +100,7 @@ const routes: Array<RouteRecordRaw> = [
         path: '/supplier',
         component: () => import('@/pages/supplier/SupplierView.vue'),
         meta: {
+          requiresAuth: true,
           title: 'Supplier'
         }
       },
@@ -91,6 +109,7 @@ const routes: Array<RouteRecordRaw> = [
         path: '/package',
         component: () => import('@/pages/package/PackageView.vue'),
         meta: {
+          requiresAuth: true,
           title: 'Package'
         }
       },
@@ -99,6 +118,7 @@ const routes: Array<RouteRecordRaw> = [
         path: '/promotion',
         component: () => import('@/pages/promotion/PromotionView.vue'),
         meta: {
+          requiresAuth: true,
           title: 'Promotion'
         }
       },
@@ -107,6 +127,7 @@ const routes: Array<RouteRecordRaw> = [
         path: '/payment-method',
         component: () => import('@/pages/paymentMethod/PaymentMethodView.vue'),
         meta: {
+          requiresAuth: true,
           title: 'Payment Method'
         }
       },
@@ -115,6 +136,7 @@ const routes: Array<RouteRecordRaw> = [
         path: '/bill',
         component: () => import('@/pages/bill/BillView.vue'),
         meta: {
+          requiresAuth: true,
           title: 'Bill'
         }
       },
@@ -137,8 +159,19 @@ const router = createRouter({
 })
 
 router.beforeEach((to, from, next) => {
-  document.title = `${to.meta.title}`
-  next()
+  const accountStore = useAccountStore();
+  if (to.meta.requiresAuth) {
+    const hasToken = localStorage.getItem('token');
+    if (hasToken && accountStore.user?.accountType?.role == 'admin') {
+      next();
+    }
+    else {
+      next("/error");
+    }
+  } else {
+    next();
+  }
+  document.title = `${to.meta.title}`;
 })
 
 export default router;
